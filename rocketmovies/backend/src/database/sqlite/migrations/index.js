@@ -2,14 +2,14 @@
 const sqlConnection = require('../../sqlite/index')
 const createUsers = require('./createUsers')
 const createMovies = require('./createMovies')
-const createTags = require('./createTags')
+const createLinks = require('./createLinks')
 // END REQUIRES
 
 // Função responsável pela execução/criação da tabela "createUsers" sempre que a aplicação for inicializada.
 async function migrationsRun() {
   const tableUsers = [createUsers].join()
   const tableMovies = [createMovies].join()
-  const tableTags = [createTags].join()
+  const tableTags = [createLinks].join()
 
   // Chamando a função sqlConnection e executando a criação das tabelas
   sqlConnection()

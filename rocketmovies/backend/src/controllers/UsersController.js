@@ -1,7 +1,11 @@
 // REQUIRES
 const sqlConnection = require('../database/sqlite/index')
+const AppError = require('../utils/AppError')
+const { hash, compare } = require('bcryptjs')
 // END REQUIRES
-
+const regexValidator = new RegExp(
+  /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])([a-zA-Z0-9]{8,}).+$/
+)
 // CLASS UsersController
 class UsersController {
   // Method create - responsability for create and validated the informations in database
@@ -14,10 +18,23 @@ class UsersController {
     const checkUserExist = await database.get('SELECT * FROM users WHERE email = (?)', [email])
 
     if (checkUserExist) {
-      return console.log('User already exists!');
+      throw new AppError('User already exists.')
     }
 
-    await database.run('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, password])
+    if (!name || name == '') {
+      throw new AppError('Please enter your name.')
+    }
+
+    if (password.length < 8) {
+      throw new AppError('Password need to be at least 8 characters, one number and one special character.')
+    }
+    // } else if (!specialCharacters.exec(password)) {
+    //   throw new AppError('Password need to be at least 8 characters, one number and one special character.')
+    // }
+
+    const hashedPassword = await hash(password, 8)
+
+    await database.run('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, hashedPassword])
 
     return response.json()
   }
@@ -27,8 +44,8 @@ class UsersController {
     const { name, email, oldPassword, newPassword } = request.body
 
     // Pegando o valor informado no parametro
-    const { user_id } = request.params
-
+    const user_id = request.user.id
+    
     // Realizando a conexão com o banco de dados.
     const database = await sqlConnection()
 
@@ -37,35 +54,54 @@ class UsersController {
 
     // Validando se o usuário está cadastrado no banco de dados.
     if (!user) {
-      return console.log('Usuário não encontrado!');
+      throw new AppError('User not exists')
     }
 
     // Buscando o usuário no banco de dados atráves do e-mail informado na requisição do "corpo".
     const userWithUpdatedEmail = await database.get('SELECT * FROM users WHERE email = (?)', [email])
 
     // Validando se o usuário com o e-mail existe e, também se o ID do usuário com o e-mail é o mesmo do usuário com o ID informado no parametro.
-    if (userWithUpdatedEmail && userWithUpdatedEmail.id != user.id) {
-      return console.log('E-mail em uso.');
+    if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) {
+      throw new AppError('E-mail already used.')
     }
 
-    // Inserindo os novos valores no usuário caso existe, caso não exista receberá o mesmo valor.
-    user.name = name ?? user.name
-    user.email = email ?? user.email
-
-    if (!oldPassword && newPassword) {
-      return console.log('Senha antiga não informada!')
+    if (!name) {
+      user.name = user.name
+    } else {
+      user.name = name
     }
 
-    if (oldPassword && !newPassword) {
-      return console.log('Nova senha não informada!')
+    if (!email) {
+      user.email = user.email
+    } else {
+      user.email = email
     }
 
-    if (oldPassword && newPassword) {
-      if (oldPassword != user.password) {
-        return console.log('Senha antiga inválida!');
+    if (oldPassword || newPassword) {
+      if (!oldPassword && newPassword) {
+        throw new AppError('Please insert your old password.')
       }
-      user.password = newPassword
+
+      if (oldPassword && !newPassword) {
+        throw new AppError('New password not informed.')
+      }
+
+      if (oldPassword && newPassword.length < 8) {
+        throw new AppError('Password must be 8 or more characters, one number and one special character.')
+      } else if (!regexValidator.exec(newPassword)) {
+        console.log(regexValidator.exec(newPassword));
+        throw new AppError('Password must be 8 or more characters, one number and one special character.')
+      }
+
+      if (oldPassword && newPassword) {
+        const checkOldPassword = await compare(oldPassword, user.password)
+        if (!checkOldPassword) {
+          throw new AppError('Senha antiga inválida.')
+        }
+        user.password = await hash(newPassword, 8)
+      }
     }
+
 
     await database.run(`UPDATE users SET name = ?, email = ?, password = ?, updated_at = DATETIME('now') WHERE id = (?)`, [user.name, user.email, user.password, user_id])
 
