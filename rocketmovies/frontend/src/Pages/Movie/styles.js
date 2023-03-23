@@ -14,43 +14,78 @@ export const Content = styled.div`
 
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 2rem;
 
   overflow-y: auto;
 
-  > div {
+  >div:nth-child(1) {
     display: flex;
-    gap: 1rem;
-    align-items: center;
+    justify-content: space-between;
+  }
 
-    > h2 {
-      font-weight: 400;
-      font-size: 2.4rem;
-    }
+  >button{
+    background: ${({ theme }) => theme.COLORS.pink};
+    border: none;
+    border-radius: .6rem;
+    width: 100%;
+    
+    padding: 1.6rem;
 
-    .user {
-      width: 28px;
-      height: 28px;
-      border-radius: 100%;
-    }
+    font-size: 1.8rem;
+    font-weight: 500;
 
-    > p {
-      font-size: 1.4rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+
+    color: ${({ theme }) => theme.COLORS.white};
+  }
+
+  > .disabled {
+    display: none;
+  }
+`
+
+export const Title = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+
+  > input{
+    background: ${({ theme }) => theme.COLORS.background_input};
+    padding: 2rem;
+    border-radius: .6rem;
+    font-size: 2rem;
+    border: none;
+    color: ${({ theme }) => theme.COLORS.white};
+    font-weight: 500;
+
+    &::placeholder{
+    color: ${({ theme }) => theme.COLORS.gray};
     }
   }
 `
 
-export const Cards = styled.div`
-  margin-top: 1rem;
+export const MovieTitle = styled.div`
   display: flex;
+  align-items: center;
   gap: 2rem;
-`
 
-export const Card = styled.div`
-  background: ${({theme}) => theme.COLORS.background_tag};
-  padding: .6rem;
-  border-radius: .6rem;
+  > div:nth-child(1) {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 
-  color: ${({theme}) => theme.COLORS.gray_200};
-  font-size: 1.4rem;
+  > img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    }
+  }
+
+  >div:nth-child(2) {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
 `

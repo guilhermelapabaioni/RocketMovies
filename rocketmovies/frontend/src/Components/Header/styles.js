@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 
 export const Container = styled.div`
@@ -30,16 +31,22 @@ export const Profile = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: center;
+    font-size: 2rem;
   }
 
-  > div a {
+  >div a {
     color: ${({theme}) => theme.COLORS.gray_200};
-    font-size: 1.4rem;
   }
 
-  > img{
-    width: 56px;
-    height: 56px;
+  >button {
+    background: none;
+    border: none;
+    border-radius: 50%;
+  }
+
+  > button img{
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
   }
 `

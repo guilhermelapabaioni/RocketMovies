@@ -1,41 +1,96 @@
-import {FiArrowLeft, FiPlus, FiX} from 'react-icons/fi'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { FiArrowLeft } from 'react-icons/fi'
+import { Link } from 'react-router-dom'
+import { api } from '../../services/api'
 
-import {Header} from '../../Components/Header'
-import {ButtonText} from '../../Components/ButtonText'
-import {Input} from '../../Components/Input'
-import {Button} from '../../Components/Button'
+import { Header } from '../../Components/Header'
+import { ButtonText } from '../../Components/ButtonText'
+import { Section } from '../../Components/Section'
+import { MovieItem } from '../../Components/MovieItem'
+import { TextArea } from '../../Components/TextArea'
+import { Input } from '../../Components/Input'
+import { Button } from '../../Components/Button'
 
-import { Container, Content } from "../New/styles.js"
+import { Container, Form } from '../New/styles.js'
 
-export function New(){
+export function New() {
+  const [title, setTitle] = useState('')
+  const [grade, setGrade] = useState('')
+  const [description, setDescription] = useState('')
 
-  return(
+  const [links, setLinks] = useState([])
+  const [newLink, setNewLink] = useState('')
+
+  const navigate = useNavigate()
+
+  function handleAddLink() {
+    if (newLink === '') {
+      return alert('Link empty.')
+    } else {
+      setLinks(prevState => [...prevState, newLink])
+      setNewLink('')
+    }
+  }
+
+  function handleRemoveLink(deleted) {
+    setLinks(prevState => prevState.filter(link => link !== deleted))
+  }
+
+  async function handleNewNote() {
+    if (!title) {
+      return alert('Please insert movie title')
+    } else if (!grade || grade > 5) {
+      return alert('Please insert movie grade')
+    }
+
+    await api.post(`/movies`, { title, grade, description, links })
+
+    alert('Nota criada com sucesso!')
+    navigate('/')
+  }
+
+  return (
     <Container>
-      <Header name={'Guilherme Baioni'}/>
-      <Content>
-        <ButtonText icon={FiArrowLeft} title={'Voltar'}/>
-        <h2>Novo filme</h2>
+      <Header />
+      <Form>
+        <Link to="/">
+          <ButtonText icon={FiArrowLeft} title={'Voltar'} />
+        </Link>
+        <Section title="Novo Filme">
+          <Input
+            placeholder={'Título'}
+            onChange={event => setTitle(event.target.value)}
+          />
+          <Input
+            placeholder={'Sua nota (de 0 a 5)'}
+            onChange={event => setGrade(event.target.value)}
+          />
+        </Section>
+        <TextArea
+          placeholder="Observações"
+          onChange={event => setDescription(event.target.value)}
+        />
+        <Section title="Links">
+          <MovieItem
+            isNew
+            placeholder="Novo Link"
+            value={newLink}
+            onChange={event => setNewLink(event.target.value)}
+            onClick={handleAddLink}
+          />
+          {links.map((link, index) => (
+            <MovieItem
+              key={String(index)}
+              value={link}
+              onClick={() => handleRemoveLink(link)}
+            />
+          ))}
+        </Section>
         <div>
-          <Input placeholder={'Título'}/>
-          <Input placeholder={'Sua nota (de 0 a 5)'}/>
+          <Button title={'Salvar alterações'} onClick={handleNewNote} />
         </div>
-        <textarea name="" id="" cols="30" rows="10" placeholder='Observações'/>
-        <h2>Marcadores</h2>
-        <div className='marcadores'>
-          <div>
-            <p>React</p>
-            <button><FiX/></button>
-          </div>
-          <div>
-            <p>Novo marcador</p>
-            <button><FiPlus/></button>
-          </div>
-        </div>
-        <div>
-          <button className='deleteMovies'>Excluir Filmes</button>
-          <Button title={'Salvar alterações'}/>
-        </div>
-      </Content>
+      </Form>
     </Container>
   )
 }
