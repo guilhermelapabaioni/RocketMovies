@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import theme from '../../styles/theme'
+import { Link } from 'react-router-dom'
 
 export const Container = styled.div`
   width: 100%;
@@ -9,7 +9,7 @@ export const Container = styled.div`
   flex-direction: column;
 `
 
-export const Title = styled.div`
+export const Tittle = styled.div`
   width: 100rem;
   margin: 0 auto;
   margin-block: 4rem;
@@ -17,6 +17,7 @@ export const Title = styled.div`
   > div {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 2rem;
     border-bottom: solid 1px ${({ theme }) => theme.COLORS.header_border_bottom};
     position: relative;
@@ -26,6 +27,29 @@ export const Title = styled.div`
       font-size: 3.2rem;
       line-height: 4.2rem;
     }
+  }
+`
+
+export const NewMovie = styled(Link)`
+  background: ${({ theme }) => theme.COLORS.pink};
+  border: none;
+  border-radius: .6rem;
+
+  padding: 2rem;
+
+  font-size: 2rem;
+  font-weight: 500;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .8rem;
+
+  color: ${({ theme }) => theme.COLORS.white};
+
+  >svg{
+    height: 3rem;
+    width: 3rem;
   }
 `
 
@@ -39,12 +63,4 @@ export const Content = styled.div`
   gap: 2rem;
 
   overflow-y: auto;
-`
-
-export const Card = styled.div`
-  margin-bottom: 2rem;
-  background: ${({ theme }) => theme.COLORS.card};
-  padding: 2rem;
-  border-radius: 0.6rem;
-  margin-right: .6rem;
 `

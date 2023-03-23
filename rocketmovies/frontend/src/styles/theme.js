@@ -9,7 +9,7 @@ export default {
     white: '#ffffff',
     gray_300: '#1c1b1e',
     gray_200: '#cac4cf',
-    card: '#FF859B10',
+    card: '#ffe6ea10',
 
     header_border_bottom: '#3e3b47'
   }

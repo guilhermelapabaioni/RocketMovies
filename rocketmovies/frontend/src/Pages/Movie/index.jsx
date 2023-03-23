@@ -1,42 +1,133 @@
-import { FiArrowLeft, FiClock } from "react-icons/fi";
+import { FiArrowLeft, FiClock } from 'react-icons/fi'
+import { AiFillEdit } from 'react-icons/ai'
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { api } from '../../services/api'
+import { useAuth } from '../../hooks/auth'
+import { validateGrade } from '../../services/functions'
 
-import { Header } from "../../Components/Header";
-import { ButtonText } from "../../Components/ButtonText";
+import { Header } from '../../Components/Header'
+import { ButtonText } from '../../Components/ButtonText'
+import { Input } from '../../Components/Input'
+import { TextArea } from '../../Components/TextArea'
+import { Link } from '../../Components/Link'
 
+import { Container, Content, Title, MovieTitle } from './styles'
 
-import { Container, Content, Cards, Card } from "./styles";
+export function Movie() {
+  const { user } = useAuth()
+  const [data, setData] = useState(null)
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
 
-export function Movie(){
-  return(
+  const avatarURL = user.avatar
+    ? `${api.defaults.baseURL}/files/${user.avatar}`
+    : avatarPlaceholder
+
+  const params = useParams(null)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    async function fetchMovie() {
+      const response = await api.get(`/movies/${params.id}`)
+      setData(response.data)
+    }
+
+    fetchMovie()
+  }, [])
+
+  let counter = Number()
+
+  async function handleEditMovie() {
+    if (counter === 0) {
+      counter++
+      document.getElementById('description').disabled = false
+      document.getElementById('inputTitle').disabled = false
+      document.getElementById('buttonDelete').classList.add('disabled')
+      document.getElementById('buttonSave').classList.remove('disabled')
+      return
+    }
+
+    if (counter === 1) {
+      counter--
+      document.getElementById('description').disabled = true
+      document.getElementById('inputTitle').disabled = true
+      document.getElementById('buttonDelete').classList.remove('disabled')
+      document.getElementById('buttonSave').classList.add('disabled')
+      return
+    }
+  }
+
+  async function handleUpdateMovie() {
+    await api.put(`/movies/${params.id}`, { title, description })
+    alert('Movie updated successfully')
+    counter = 1
+    handleEditMovie()
+  }
+
+  async function handleDeleteMovie() {
+    await api.delete(`/movies/${params.id}`)
+    alert('Movie has been deleted with success.')
+    navigate('/')
+  }
+
+  return (
     <Container>
-      <Header name={'Guilherme Baioni'}/>
-      <Content>
-        <ButtonText icon={FiArrowLeft} title={'Voltar'}/>
-        <div>
-          <h2>Interestellar</h2>
-          <img src="../../public/starts_card.svg" alt="" />
-        </div>
-        <div>
-          <img className="user" src="https://github.com/guilhermelapabaioni.png" alt="" />
-          <p>Por Guilherme Baioni</p>
-          <p><FiClock/> 23/05/22 às 08:00</p>
-        </div>
-        <Cards>
-          <Card>
-            <h4>Ficção Cientifica</h4>
-          </Card>
-          <Card>
-            <h4>Drama</h4>
-          </Card>
-          <Card>
-            <h4>Família</h4>
-          </Card>
-        </Cards>
-        <p>Pragas nas colheitas fizeram a civilização humana regredir para uma sociedade agrária em futuro de data desconhecida. Cooper, ex-piloto da NASA, tem uma fazenda com sua família. Murphy, a filha de dez anos de Cooper, acredita que seu quarto está assombrado por um fantasma que tenta se comunicar com ela. Pai e filha descobrem que o "fantasma" é uma inteligência desconhecida que está enviando mensagens codificadas através de radiação gravitacional, deixando coordenadas em binário que os levam até uma instalação secreta da NASA liderada pelo professor John Brand. O cientista revela que um buraco de minhoca foi aberto perto de Saturno e que ele leva a planetas que podem oferecer condições de sobrevivência para a espécie humana. As "missões Lázaro" enviadas anos antes identificaram três planetas potencialmente habitáveis orbitando o buraco negro Gargântua: Miller, Edmunds e Mann – nomeados em homenagem aos astronautas que os pesquisaram. Brand recruta Cooper para pilotar a nave espacial Endurance e recuperar os dados dos astronautas; se um dos planetas se mostrar habitável, a humanidade irá seguir para ele na instalação da NASA, que é na realidade uma enorme estação espacial. A partida de Cooper devasta Murphy.
-
-        Além de Cooper, a tripulação da Endurance é formada pela bióloga Amelia, filha de Brand; o cientista Romilly, o físico planetário Doyle, além dos robôs TARS e CASE. Eles entram no buraco de minhoca e se dirigem a Miller, porém descobrem que o planeta possui enorme dilatação gravitacional temporal por estar tão perto de Gargântua: cada hora na superfície equivale a sete anos na Terra. Eles entram em Miller e descobrem que é inóspito já que é coberto por um oceano raso e agitado por ondas enormes. Uma onda atinge a tripulação enquanto Amelia tenta recuperar os dados de Miller, matando Doyle e atrasando a partida. Ao voltarem para a Endurance, Cooper e Amelia descobrem que 23 anos se passaram.
-        </p>
-      </Content>
+      <Header >
+        <div></div>
+      </Header>
+      {data && (
+        <Content>
+          <div>
+            <ButtonText icon={FiArrowLeft} title="Voltar" href="/" />
+            <ButtonText icon={AiFillEdit} size="40" onClick={handleEditMovie} />
+          </div>
+          <Title>
+            <input
+              defaultValue={data.title}
+              disabled
+              id="inputTitle"
+              onChange={event => setTitle(event.target.value)}
+            />
+            <div>{validateGrade(data.grade)}</div>
+          </Title>
+          <MovieTitle>
+            <div>
+              <img src={avatarURL} alt={`Image from user ${user.name}`} />
+              <p>Por {user.name}</p>
+            </div>
+            <div>
+              <ButtonText icon={FiClock} />
+              <p>{data.created_at}</p>
+            </div>
+          </MovieTitle>
+          {data.links && (
+            <div>
+              {data.links.map(link => (
+                <Link
+                  key={link.id}
+                  title={link.url}
+                  to={link.url}
+                  target="_blank"
+                />
+              ))}
+            </div>
+          )}
+          <TextArea
+            placeholder="Observações"
+            onChange={event => setDescription(event.target.value)}
+            defaultValue={data.description}
+            disabled
+            id="description"
+          />
+          <button onClick={handleDeleteMovie} id="buttonDelete">
+            Excluir
+          </button>
+          <button onClick={handleUpdateMovie} id="buttonSave" class="disabled">
+            Salvar
+          </button>
+        </Content>
+      )}
     </Container>
   )
 }
